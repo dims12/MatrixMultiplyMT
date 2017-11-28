@@ -83,11 +83,12 @@ public class ExecutorTest {
       System.out.println("Multiplying ST...");
       double elapsedST = measureTimeInSeconds(() -> Executor.multiply_ST(actual_st, matrix1, matrix2));
       System.out.println("Multiplying MT...");
-      double elapsedMT = measureTimeInSeconds(() -> Executor.multiply_MT(actual_st, matrix1, matrix2));
+      double elapsedMT = measureTimeInSeconds(() -> Executor.multiply_MT(actual_mt, matrix1, matrix2));
 
       System.out.println(String.format("Elapsed time with ST is %.4f seconds", elapsedST));
       System.out.println(String.format("Elapsed time with MT is %.4f seconds", elapsedMT));
 
+      assertEquals(actual_st, actual_mt);
       assertTrue( elapsedST > elapsedMT );
 
 
