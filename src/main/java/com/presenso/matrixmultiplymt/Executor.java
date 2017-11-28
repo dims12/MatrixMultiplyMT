@@ -2,6 +2,7 @@ package com.presenso.matrixmultiplymt;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -77,13 +78,17 @@ public class Executor {
       // map
       for(int row=0; row<ans.size(); ++row) {
          for(int col=0; col<ans.size(); ++col) {
-            tasks.add(new MultiplyRowAndColTask(matrix1, matrix2, row, col));
+            tasks.add(new MultiplyRowAndColTask(ans, matrix1, matrix2, row, col));
          }
       }
 
       // reduce
-      for(MultiplyRowAndColTask task : tasks) {
-         task.assign(ans);
+      try {
+         for(MultiplyRowAndColTask task : tasks) {
+               task.get();
+         }
+      } catch (ExecutionException | InterruptedException e) {
+         throw new RuntimeException(e);
       }
 
    }
@@ -113,8 +118,8 @@ public class Executor {
     * @param task
     * @return
     */
-   protected static Future<Double> submitMultiplyRowAndColTask(MultiplyRowAndColTask task) {
-      return delegate.submit(task);
+   protected static Future<MultiplyRowAndColTask> submitMultiplyRowAndColTask(MultiplyRowAndColTask task) {
+      return delegate.submit(task, task);
    }
 
 

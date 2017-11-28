@@ -71,22 +71,33 @@ public class ExecutorTest {
    }
 
    @Test
+   public void MTExists() {
+      assertTrue(Executor.NThreads>1 );
+   }
+
+   @Test
    public void testSpeed() {
 
-      Matrix matrix1 = Matrix.random(1000, -2, 2, 1);
-      Matrix matrix2 = Matrix.random(1000, -2, 2, 2);
+      System.out.println(String.format("Using %d threads for MT...", Executor.NThreads));
+
+      int size = 1000;
+
+      Matrix matrix1 = Matrix.random(size, -2, 2, 1);
+      Matrix matrix2 = Matrix.random(size, -2, 2, 2);
 
       System.out.println("Allocating matrices...");
-      Matrix actual_st = new Matrix(1000);
-      Matrix actual_mt = new Matrix(1000);
+      Matrix actual_st = new Matrix(size);
+      Matrix actual_mt = new Matrix(size);
 
       System.out.println("Multiplying ST...");
       double elapsedST = measureTimeInSeconds(() -> Executor.multiply_ST(actual_st, matrix1, matrix2));
+      System.out.println(String.format("Elapsed time with ST is %.4f seconds", elapsedST));
+
       System.out.println("Multiplying MT...");
       double elapsedMT = measureTimeInSeconds(() -> Executor.multiply_MT(actual_mt, matrix1, matrix2));
-
-      System.out.println(String.format("Elapsed time with ST is %.4f seconds", elapsedST));
       System.out.println(String.format("Elapsed time with MT is %.4f seconds", elapsedMT));
+
+      System.out.println(String.format("Gain was %.2f times", elapsedST/elapsedMT));
 
       assertEquals(actual_st, actual_mt);
       assertTrue( elapsedST > elapsedMT );
