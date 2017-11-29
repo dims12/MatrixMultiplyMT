@@ -87,7 +87,7 @@ public class Executor {
 
       // map
       int col_end = 0;
-
+      System.out.println("Mapping tasks...");
       for(int col_start=0; col_start<ans.size() && col_end<ans.size(); col_start+=stripeSize) {
          col_end = col_start + stripeSize;
          if(col_end > ans.size()) {
@@ -96,9 +96,11 @@ public class Executor {
          else if(ans.size() - col_end < stripeSize/2) {
             col_end = ans.size();
          }
+         System.out.println(String.format("Task %d..%d", col_start, col_end));
          tasks.add(new MultiplyStripeTask(ans, matrix1, matrix2, col_start, col_end));
 
       }
+      System.out.println(String.format("Mapped %d tasks, awaiting finish...", tasks.size()));
 
 
       // reduce
