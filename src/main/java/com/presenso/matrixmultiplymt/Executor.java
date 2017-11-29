@@ -43,6 +43,14 @@ public class Executor {
       return ans;
    }
 
+   protected static void multiplyStripe_ST(Matrix dest, Matrix matrix1, Matrix matrix2, int col_start, int col_end) {
+      for(int row=0; row<dest.size(); ++row) {
+         for(int col=col_start; col<col_end; ++col) {
+            dest.data[row][col] = multiplyRowAndCol_ST(matrix1, matrix2, row, col);
+         }
+      }
+   }
+
    /**
     * ST multiplication of two matrices
     *
@@ -73,18 +81,29 @@ public class Executor {
     */
    protected static void multiply_MT(Matrix ans, Matrix matrix1, Matrix matrix2) {
 
-      List<MultiplyRowAndColTask> tasks = new ArrayList<>();
+      List<MultiplyStripeTask> tasks = new ArrayList<>();
+
+      int stripeSize = ans.size() / NThreads;
 
       // map
-      for(int row=0; row<ans.size(); ++row) {
-         for(int col=0; col<ans.size(); ++col) {
-            tasks.add(new MultiplyRowAndColTask(ans, matrix1, matrix2, row, col));
+      int col_end = 0;
+
+      for(int col_start=0; col_start<ans.size() && col_end<ans.size(); col_start+=stripeSize) {
+         col_end = col_start + stripeSize;
+         if(col_end > ans.size()) {
+            col_end = ans.size();
          }
+         else if(ans.size() - col_end < stripeSize/2) {
+            col_end = ans.size();
+         }
+         tasks.add(new MultiplyStripeTask(ans, matrix1, matrix2, col_start, col_end));
+
       }
+
 
       // reduce
       try {
-         for(MultiplyRowAndColTask task : tasks) {
+         for(MultiplyStripeTask task : tasks) {
                task.get();
          }
       } catch (ExecutionException | InterruptedException e) {
@@ -119,6 +138,10 @@ public class Executor {
     * @return
     */
    protected static Future<MultiplyRowAndColTask> submitMultiplyRowAndColTask(MultiplyRowAndColTask task) {
+      return delegate.submit(task, task);
+   }
+
+   protected static Future<MultiplyStripeTask> submitMultiplyStripeTask(MultiplyStripeTask task) {
       return delegate.submit(task, task);
    }
 
